@@ -1,11 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="BranchesTreeState">
+    <expand>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="LOCAL_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+      <path>
+        <item name="ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="REMOTE_ROOT" type="e8cecc67:BranchNodeDescriptor" />
+        <item name="GROUP_NODE:origin" type="e8cecc67:BranchNodeDescriptor" />
+      </path>
+    </expand>
+    <select />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="a953a06c-fe4e-4a85-85ee-1f61aeeac5ba" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/secret_chat.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/secret_chat.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChatClient/chatClient.iml" beforeDir="false" afterPath="$PROJECT_DIR$/ChatClient/chatClient.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ChatServer/ChatServer.iml" beforeDir="false" afterPath="$PROJECT_DIR$/ChatServer/ChatServer.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ChatServer/src/com/secret/chat/serverMain.java" beforeDir="false" afterPath="$PROJECT_DIR$/ChatServer/src/com/secret/chat/serverMain.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ChatServer/com/secret/chat/serverMain.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ChatServer/com/secret/chat/serverMain.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,6 +62,7 @@
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="aspect.path.notification.shown" value="true" />
+    <property name="extract.method.default.visibility" value="private" />
     <property name="jdk.selected.JAVA_MODULE" value="11 (2)" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
     <property name="node.js.detected.package.eslint" value="true" />
@@ -88,7 +106,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1592616671815</updated>
-      <workItem from="1592616674505" duration="4639000" />
+      <workItem from="1592616674505" duration="6153000" />
     </task>
     <servers />
   </component>
@@ -115,10 +133,30 @@
       <screen x="0" y="28" width="1920" height="1052" />
     </state>
     <state x="357" y="166" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.28.1920.1052@0.28.1920.1052" timestamp="1592629281728" />
+    <state width="1344" height="242" key="GridCell.Tab.0.bottom" timestamp="1592633609885">
+      <screen x="0" y="28" width="1920" height="1052" />
+    </state>
+    <state width="1344" height="242" key="GridCell.Tab.0.bottom/0.28.1920.1052@0.28.1920.1052" timestamp="1592633609885" />
+    <state width="1344" height="242" key="GridCell.Tab.0.center" timestamp="1592633609884">
+      <screen x="0" y="28" width="1920" height="1052" />
+    </state>
+    <state width="1344" height="242" key="GridCell.Tab.0.center/0.28.1920.1052@0.28.1920.1052" timestamp="1592633609884" />
+    <state width="1344" height="242" key="GridCell.Tab.0.left" timestamp="1592633609884">
+      <screen x="0" y="28" width="1920" height="1052" />
+    </state>
+    <state width="1344" height="242" key="GridCell.Tab.0.left/0.28.1920.1052@0.28.1920.1052" timestamp="1592633609884" />
+    <state width="1344" height="242" key="GridCell.Tab.0.right" timestamp="1592633609885">
+      <screen x="0" y="28" width="1920" height="1052" />
+    </state>
+    <state width="1344" height="242" key="GridCell.Tab.0.right/0.28.1920.1052@0.28.1920.1052" timestamp="1592633609885" />
     <state x="380" y="143" width="1024" height="846" key="SettingsEditor" timestamp="1592629409251">
       <screen x="0" y="28" width="1920" height="1052" />
     </state>
     <state x="380" y="143" width="1024" height="846" key="SettingsEditor/0.28.1920.1052@0.28.1920.1052" timestamp="1592629409251" />
+    <state x="632" y="224" width="524" height="568" key="extract.method.dialog" timestamp="1592630689739">
+      <screen x="0" y="28" width="1920" height="1052" />
+    </state>
+    <state x="632" y="224" width="524" height="568" key="extract.method.dialog/0.28.1920.1052@0.28.1920.1052" timestamp="1592630689739" />
     <state x="152" y="42" width="1484" height="932" key="new project wizard" timestamp="1592626583379">
       <screen x="0" y="28" width="1920" height="1052" />
     </state>

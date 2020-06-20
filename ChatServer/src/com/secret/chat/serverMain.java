@@ -14,13 +14,33 @@ public class serverMain {
                 System.out.println("Waiting for a client connection..");
                 Socket clientSocket = serverSocket.accept();
                 System.out.println("Accepted connection form clinet " + clientSocket);
-                OutputStream outputStream = clientSocket.getOutputStream();
-                outputStream.write("Hello\n".getBytes());
-                clientSocket.close();
+                Thread t  = new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            handleClient(clientSocket);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                };
+
+                t.start();
             }
 
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void handleClient(Socket clientSocket) throws IOException {
+        OutputStream outputStream = clientSocket.getOutputStream();
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        outputStream.write("Hello\n".getBytes());
+        clientSocket.close();
     }
 }
