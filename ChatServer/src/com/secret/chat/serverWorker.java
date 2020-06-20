@@ -28,6 +28,7 @@ public class serverWorker extends Thread {
     // type 'quit' to quit the client connection
     // type 'login <uname> <pword> to login
     // type 'logout' to log out
+    // send private messages 'pm <username> messageBody'
 
     private void handleClient() throws IOException {
         InputStream inputStream = clientSocket.getInputStream();
@@ -44,13 +45,50 @@ public class serverWorker extends Thread {
                     break;
                 } else if ("login".equalsIgnoreCase(cmd)){
                     handleLogin(outputStream, tokens);
+                }else if ("pm".equalsIgnoreCase(cmd)){
+                    handleDirectMsg(tokens);
+                } else {
+                    if ( user == null) {
+                        outputStream.write(("unknown command " + cmd + " Please log in first!\n").getBytes());
+                    } else {
+                        handleBroadcastMsg(line);
+                    }
                 }
-                String message = "You typed:" + line + "\n";
-                outputStream.write(message.getBytes());
+                //String message = "You typed:" + line + "\n";
+                //outputStream.write(message.getBytes());
             }
 
         }
         clientSocket.close();
+    }
+
+    private void handleBroadcastMsg(String msg) {
+        List<serverWorker> workerList = server.getWorkerList();
+        for (serverWorker worker: workerList) {
+                String sendMsg = "Message from " + user + ": " + msg + "\n";
+                worker.send(sendMsg);
+        }
+    }
+
+    // format 'pm username msg'
+    private void handleDirectMsg(String[] tokens) {
+        String sendTo = tokens [1];
+        String msgBody = ""; // use encryption
+        int i =0;
+        for (String token: tokens){
+            if (i>1) {
+                msgBody = msgBody + " " + token;
+            }
+            i++;
+        }
+
+        List<serverWorker> workerList = server.getWorkerList();
+        for (serverWorker worker: workerList) {
+            if (sendTo.equalsIgnoreCase(worker.getUser())) {
+                String sendMsg = "Message from " + user + ": " + msgBody + "\n";
+                worker.send(sendMsg);
+            }
+        }
     }
 
     private void handleLogOff() throws IOException {
