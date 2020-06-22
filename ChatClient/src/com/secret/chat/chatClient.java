@@ -3,6 +3,8 @@ package com.secret.chat;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Base64;
+import java.util.Scanner;
 
 public class chatClient {
     private final String serverName;
@@ -37,23 +39,28 @@ public class chatClient {
 
         client.addMessagesListener(new MessageListener() {
             @Override
-            public void onMessage(String fromLUser, String msgBody) {
-                System.out.println( msgBody);
+            public void onMessage(String fromUser, String msgBody) {
+                client.decrypt(msgBody);
+                System.out.println( "Message form " + fromUser+ " : " +msgBody);
             }
         });
 
         if(client.connect()){
-            System.out.println("Connection successful");
-            if (client.login("boy","boy")) {
-                System.out.println("Client Login Successful!");
+            while(true) {
+                System.out.println("Connection successful");
+                Scanner in = new Scanner(System.in);
+                System.out.println("Welcome to Socketlovers Chat!\n\nEnter UserName: ");
+                String un = in.next();
 
-                // handle direct messages
-                client.directMsg("boy","HELLO!");
+                System.out.println("\nEnter Password: ");
+                String pw = in.next();
+                if(client.login(un, pw)){
+                    System.out.println(" Login successful!");
+                    break;
+                } else {
+                    System.out.println(" Login unsuccessful! Please try Again");
+                }
 
-                // handle broadcast messages
-                client.Msg("Test Body");
-            }  else {
-                System.err.println("Client Login Failed!");
             }
             // client.logOut();
         } else {
@@ -61,28 +68,43 @@ public class chatClient {
         }
     }
 
-    private void Msg( String msg) throws IOException {
-       // String sendMsg = "Message from " + user + ": " + msg + "\n";
-        serverOut.write(msg.getBytes());
+    public String encrypt(String plain) {
+        String b64encoded = Base64.getEncoder().encodeToString(plain.getBytes());
+
+        // Reverse the string
+        String reverse = new StringBuffer(b64encoded).reverse().toString();
+
+        StringBuilder tmp = new StringBuilder();
+        final int OFFSET = 4;
+        for (int i = 0; i < reverse.length(); i++) {
+            tmp.append((char)(reverse.charAt(i) + OFFSET));
+        }
+        return tmp.toString();
     }
 
-    private void directMsg(String sendTo, String msgBody) throws IOException {
-        String cmd = "pm " + sendTo + " " + msgBody + "\n";
-        serverOut.write(cmd.getBytes());
+    public String decrypt(String secret) {
+        StringBuilder tmp = new StringBuilder();
+        final int OFFSET = 4;
+        for (int i = 0; i < secret.length(); i++) {
+            tmp.append((char)(secret.charAt(i) - OFFSET));
+        }
+
+        String reversed = new StringBuffer(tmp.toString()).reverse().toString();
+        return new String(Base64.getDecoder().decode(reversed));
     }
 
-    private void logOut() throws IOException {
+    public void logOut() throws IOException {
         String cmd = "logout\n";
         serverOut.write(cmd.getBytes());
     }
 
-    private boolean login(String userName, String password) throws IOException {
+    public boolean login(String userName, String password) throws IOException {
         this.user = userName;
         String cmd = "login "+ userName + " " + password+ "\n";
         serverOut.write(cmd.getBytes());
 
         String response = bufferIn.readLine();
-        System.out.println("Server Response: " + response);
+        System.out.println( response);
 
         if ( (response.split(" ")[1]).equalsIgnoreCase(userName)){
             startMessageReader();
@@ -107,7 +129,8 @@ public class chatClient {
             private void readMessageLoop() throws IOException {
                 try{
                     String line;
-                    while ((line = bufferIn.readLine()) != null) {
+                    Scanner in = new Scanner(System.in);
+                    while ((line = in.nextLine()) != null) {
                         String[] tokens = line.split(" ");
                         if (tokens != null && tokens.length >0) {
                             if ("online".equalsIgnoreCase(tokens[0])){
@@ -128,50 +151,70 @@ public class chatClient {
 
             }
 
-            private void handleBroadcastMsg(String[] tokens) {
-                String msgBody = ""; // use encryption
-                for (String token: tokens){
-                        msgBody = msgBody + " " + token;
-                }
-                for (MessageListener listener: messageListeners) {
-                    listener.onMessage(user, msgBody);
-                }
-            }
 
-            private void handleDirectMsg(String[] tokens) {
-                String sendTo = tokens [1];
-                String msgBody = ""; // use encryption
-                int i =0;
-                for (String token: tokens){
-                    if (i>1) {
-                        msgBody = msgBody + " " + token;
-                    }
-                    i++;
-                }
-
-                for (MessageListener listener: messageListeners) {
-                    listener.onMessage(sendTo,msgBody);
-                }
-            }
-
-            private void handleOnline(String[] tokens) {
-                String userName = tokens[1];
-                for(UserStatusListener listener: userStatusListeners){
-                    listener.online(userName);
-                }
-            }
-
-            private void handleOffline(String[] tokens) {
-                String userName = tokens[1];
-                for(UserStatusListener listener: userStatusListeners){
-                    listener.offline(userName);
-                }
-            }
         };
         t.start();
     }
 
-    private boolean connect() {
+    public void Msg( String msg) throws IOException {
+        // String sendMsg = "Message from " + user + ": " + msg + "\n";
+        serverOut.write(msg.getBytes());
+        String response = bufferIn.readLine();
+        System.out.println(response);
+    }
+
+    public void directMsg(String sendTo, String msgBody) throws IOException {
+        String cmd = "pm " + sendTo + " " + msgBody + "\n";
+        serverOut.write(cmd.getBytes());
+        String response = bufferIn.readLine();
+        System.out.println(response);
+    }
+
+    private void handleBroadcastMsg(String[] tokens) throws IOException {
+        String msgBody = ""; // use encryption
+        for (String token: tokens){
+            msgBody = msgBody + " " + token;
+        }
+        for (MessageListener listener: messageListeners) {
+            listener.onMessage(user, msgBody);
+        }
+        msgBody = encrypt(msgBody);
+        Msg(msgBody);
+    }
+
+    private void handleDirectMsg(String[] tokens) throws IOException {
+        String sendTo = tokens [1];
+        String msgBody = ""; // use encryption
+        int i =0;
+        for (String token: tokens){
+            if (i>1) {
+                msgBody = msgBody + " " + token;
+            }
+            i++;
+        }
+
+        for (MessageListener listener: messageListeners) {
+            listener.onMessage(sendTo,msgBody);
+        }
+        msgBody = encrypt(msgBody);
+        directMsg(sendTo,msgBody);
+    }
+
+    private void handleOnline(String[] tokens) {
+        String userName = tokens[1];
+        for(UserStatusListener listener: userStatusListeners){
+            listener.online(userName);
+        }
+    }
+
+    private void handleOffline(String[] tokens) {
+        String userName = tokens[1];
+        for(UserStatusListener listener: userStatusListeners){
+            listener.offline(userName);
+        }
+    }
+
+    public boolean connect() {
         try {
             this.socket = new Socket(serverName, serverPort);
             System.out.println("Client port is "+ socket.getLocalPort());
@@ -185,19 +228,19 @@ public class chatClient {
         return false;
     }
 
-    private void addUserStatusListener(UserStatusListener listener) {
+    public void addUserStatusListener(UserStatusListener listener) {
         userStatusListeners.add(listener);
     }
 
-    private void addMessagesListener(MessageListener listener) {
+    public void addMessagesListener(MessageListener listener) {
         messageListeners.add(listener);
     }
 
-    private void removeMessagesListener(MessageListener listener) {
+    public void removeMessagesListener(MessageListener listener) {
         messageListeners.remove(listener);
     }
 
-    private void removeUserStatusListener(UserStatusListener listener) {
+    public void removeUserStatusListener(UserStatusListener listener) {
         userStatusListeners.remove(listener);
     }
 }
