@@ -4,11 +4,15 @@ import java.io.*;
 import java.net.Socket;
 import java.util.List;
 
+// encryption & decryption imports
+
+
 public class serverWorker extends Thread {
     private final Socket clientSocket;
     private final Server server;
     private String user;
     private OutputStream outputStream;
+
 
     public serverWorker(Server server, Socket clientSocket) {
         this.server = server;
@@ -98,7 +102,7 @@ public class serverWorker extends Thread {
         for (serverWorker worker: workerList) {
             if (!user.equals(worker.getUser())) {
                 if (worker.getUser() != null ){
-                    String loginMsg2 = "User " + user + " is offline\n";
+                    String loginMsg2 = "offline " + user + "\n";
                     worker.send(loginMsg2);
                 }
             }
@@ -116,9 +120,9 @@ public class serverWorker extends Thread {
             String pword = tokens[2];
             if (uname.equals("girl") && pword.equals("girl") || uname.equals("boy") && pword.equals("boy")) {
                 this.user = uname;
-                System.out.println( " User " + user + " has logged in..");
+                System.out.println( "logged " + user );
 
-                String loginMsg = "user " + user + " is online\n";
+                String loginMsg = "online " + user + "\n";
                 outputStream.write(loginMsg.getBytes());
 
                 List<serverWorker> workerList = server.getWorkerList();
@@ -135,6 +139,7 @@ public class serverWorker extends Thread {
             } else {
                 try {
                     outputStream.write("Error in Login\n".getBytes());
+                    System.out.println("Login attempt failed");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
