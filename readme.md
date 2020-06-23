@@ -2,7 +2,7 @@
 
 This application is developed using JAVA Networking (Sockets API) 
 
-Chat application frontend - JAVA FX GUI
+Chat application frontend - JAVA swing GUI (has issues)
 
 Messages are end-to-end encrypted
 
