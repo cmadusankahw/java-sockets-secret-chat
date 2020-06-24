@@ -9,12 +9,15 @@ import java.util.List;
 public class Server extends Thread{
     private final int serverPort;
 
+    // arrayList of service workers
     private ArrayList<serverWorker> workerList = new ArrayList<>();
 
+    // setting server port for socket communication
     public Server(int serverPort) {
         this.serverPort = serverPort;
     }
 
+    // getting worker list
     public List<serverWorker> getWorkerList() {
         return workerList;
     }
@@ -25,11 +28,11 @@ public class Server extends Thread{
             ServerSocket serverSocket = new ServerSocket(serverPort);
             while(true){
                 System.out.println("Waiting for a client connection..");
-                Socket clientSocket = serverSocket.accept();
+                Socket clientSocket = serverSocket.accept();  // accepting client socket
                 System.out.println("Accepted connection form clinet " + clientSocket);
-                serverWorker worker = new serverWorker(this, clientSocket);
-                workerList.add(worker);
-                worker.start();
+                serverWorker worker = new serverWorker(this, clientSocket); // creating new Server worker to handle client
+                workerList.add(worker); // adding worker to Server Worker list
+                worker.start(); // Starting worker in a new Thread
 
             }
 
@@ -39,6 +42,6 @@ public class Server extends Thread{
     }
 
     public void removeWorker(serverWorker serverWorker) {
-        workerList.remove(serverWorker);
+        workerList.remove(serverWorker); // removing serverWorker once the client is disconnected
     }
 }

@@ -24,7 +24,7 @@ public class chatClient {
     }
 
     public static void main(String[] args) throws IOException {
-        chatClient client = new chatClient("localhost", 8188);
+        chatClient client = new chatClient("localhost", 7800);
         client.addUserStatusListener(new UserStatusListener() {
             @Override
             public void online(String userName) {
@@ -40,7 +40,6 @@ public class chatClient {
         client.addMessagesListener(new MessageListener() {
             @Override
             public void onMessage(String fromUser, String msgBody) {
-                client.decrypt(msgBody);
                 System.out.println( "Message form " + fromUser+ " : " +msgBody);
             }
         });
@@ -55,164 +54,28 @@ public class chatClient {
                 System.out.println("\nEnter Password: ");
                 String pw = in.next();
                 if(client.login(un, pw)){
-                    System.out.println(" Login successful!");
-                    break;
+                    System.out.println("Login successful!");
+                        break;
                 } else {
                     System.out.println(" Login unsuccessful! Please try Again");
                 }
 
             }
-            // client.logOut();
+
         } else {
             System.err.println("Connection Failed!");
         }
     }
 
-    public static String encrypt(String msg){
-        String key = "1234dfrghtjkGHJR";
-        msg = new StringBuilder(new String(msg)).reverse().toString();
-        msg = key + msg;
-        System.out.println("Encrypted :" + msg);
-        return msg;
-    }
 
-    public static String decrypt(String msg){
-        String key = "1234dfrghtjkGHJR";
-        msg = msg.replace(key,"");
-        msg = new StringBuilder(new String(msg)).reverse().toString();
-        System.out.println("Decrypted :" + msg);
-        return msg;
-    }
-
-
-    public void logOut() throws IOException {
-        String cmd = "logout\n";
-        serverOut.write(cmd.getBytes());
-    }
-
-    public boolean login(String userName, String password) throws IOException {
-        this.user = userName;
-        String cmd = "login "+ userName + " " + password+ "\n";
-        serverOut.write(cmd.getBytes());
-
-        String response = bufferIn.readLine();
-        System.out.println( response);
-
-        if ( (response.split(" ")[1]).equalsIgnoreCase(userName)){
-            startMessageReader();
-            return true;
-        } else {
-            return false;
-        }
-
-    }
-
-    private void startMessageReader() {
-        Thread t = new Thread() {
-            @Override
-            public void run() {
-                try {
-                    readMessageLoop();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            private void readMessageLoop() throws IOException {
-                try{
-                    String line;
-                    Scanner in = new Scanner(System.in);
-                    while ((line = in.nextLine()) != null) {
-                        String[] tokens = line.split(" ");
-                        if (tokens != null && tokens.length >0) {
-                            if ("online".equalsIgnoreCase(tokens[0])){
-                                handleOnline(tokens);
-                            } else if ("offline".equalsIgnoreCase(tokens[0])){
-                                handleOffline(tokens);
-                            } else if ("pm".equalsIgnoreCase(tokens[0])){
-                                handleDirectMsg(tokens);
-                            } else {
-                                handleBroadcastMsg(tokens);
-                            }
-                        }
-                    }
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    socket.close();
-                }
-
-            }
-
-
-        };
-        t.start();
-    }
-
-    public void Msg( String msg) throws IOException {
-        // String sendMsg = "Message from " + user + ": " + msg + "\n";
-        serverOut.write(msg.getBytes());
-        String response = bufferIn.readLine();
-        System.out.println(response);
-    }
-
-    public void directMsg(String sendTo, String msgBody) throws IOException {
-        String cmd = "pm " + sendTo + " " + msgBody + "\n";
-        serverOut.write(cmd.getBytes());
-        String response = bufferIn.readLine();
-        System.out.println(response);
-    }
-
-    private void handleBroadcastMsg(String[] tokens) throws IOException {
-        String msgBody = ""; // use encryption
-        for (String token: tokens){
-            msgBody = msgBody + " " + token;
-        }
-        for (MessageListener listener: messageListeners) {
-            listener.onMessage(user, msgBody);
-        }
-        msgBody = encrypt(msgBody);
-        Msg(msgBody);
-    }
-
-    private void handleDirectMsg(String[] tokens) throws IOException {
-        String sendTo = tokens [1];
-        String msgBody = ""; // use encryption
-        int i =0;
-        for (String token: tokens){
-            if (i>1) {
-                msgBody = msgBody + " " + token;
-            }
-            i++;
-        }
-
-        for (MessageListener listener: messageListeners) {
-            listener.onMessage(sendTo,msgBody);
-        }
-        msgBody = encrypt(msgBody);
-        directMsg(sendTo,msgBody);
-    }
-
-    private void handleOnline(String[] tokens) {
-        String userName = tokens[1];
-        for(UserStatusListener listener: userStatusListeners){
-            listener.online(userName);
-        }
-    }
-
-    private void handleOffline(String[] tokens) {
-        String userName = tokens[1];
-        for(UserStatusListener listener: userStatusListeners){
-            listener.offline(userName);
-        }
-    }
-
+    // connecting client socket to server
     public boolean connect() {
         try {
-            this.socket = new Socket(serverName, serverPort);
+            this.socket = new Socket(serverName, serverPort); // creating new socket connection
             System.out.println("Client port is "+ socket.getLocalPort());
             this.serverOut = socket.getOutputStream();
             this.serverIn = socket.getInputStream();
-            this.bufferIn = new BufferedReader(new InputStreamReader(serverIn));
+            this.bufferIn = new BufferedReader(new InputStreamReader(serverIn)); // buffer reader to read server responses
             return true;
         } catch (IOException e) {
             e.printStackTrace();
@@ -220,6 +83,7 @@ public class chatClient {
         return false;
     }
 
+    // adding and removing User State listeners and Message listeners
     public void addUserStatusListener(UserStatusListener listener) {
         userStatusListeners.add(listener);
     }
@@ -235,4 +99,169 @@ public class chatClient {
     public void removeUserStatusListener(UserStatusListener listener) {
         userStatusListeners.remove(listener);
     }
+
+
+    // encrypt messages
+    public static String encrypt(String msg){
+        String key = "1234dfrghtjkGHJR";
+        msg = new StringBuilder(new String(msg)).reverse().toString();
+        msg = key + msg;
+        System.out.println("Encrypted :" + msg);
+        return msg;
+    }
+
+    // handle client log out and state updating
+    public void logOut() throws IOException {
+        String cmd = "logout\n";
+        serverOut.write(cmd.getBytes());
+
+        // getting server Worker response and printing
+        String response = bufferIn.readLine();
+        System.out.println( response);
+    }
+
+    // handle client log in and state updating
+    public boolean login(String userName, String password) throws IOException {
+        this.user = userName;
+        String cmd = "login "+ userName + " " + password+ "\n";
+        serverOut.write(cmd.getBytes());
+
+        // getting server Worker response and printing
+        String response = bufferIn.readLine();
+        System.out.println( response);
+
+        if ( (response.split(" ")[1]).equalsIgnoreCase(userName)){
+            // start listening to messages if the user has logged in
+            startMessageReader();
+            return true;
+        } else {
+            return false;
+        }
+
+    }
+
+    // message listener handling
+    private void startMessageReader() {
+        Thread t = new Thread() {
+            @Override
+            public void run() {
+                try {
+                    while(true){
+                        // listening for messages and providing responses
+                        readMessageLoop();
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            private void readMessageLoop() throws IOException {
+                try{
+                    String line;
+                    Scanner in = new Scanner(System.in); // gettig user input with Scanner
+                    while ((line = in.nextLine()) != null) {
+                        String[] tokens = line.split(" "); // splitting input into tokens
+                        if (tokens != null && tokens.length >0) {
+                            // extracting protocol command from tokens and perform actions
+                            if ("online".equalsIgnoreCase(tokens[0])){
+                                handleOnline(tokens); // handle user online state
+                            } else if ("offline".equalsIgnoreCase(tokens[0])){
+                                handleOffline(tokens); // handle user offline state
+                            } else if ("pm".equalsIgnoreCase(tokens[0])){
+                                handleDirectMsg(tokens); // handle private messages between two logged users
+                            }  else if ("logout".equalsIgnoreCase(tokens[0]) || "quit".equalsIgnoreCase(tokens[0]) ){
+                                logOut(); // handle user log out
+                            }else {
+                                if ( user != null) {
+                                    handleBroadcastMsg(tokens); // if protocol commands not specified consider input as a broadcast msg and share it with all logged users
+                                } else {
+                                    System.out.println("unknown command! Please log in first!\n".getBytes());
+
+                                }
+                            }
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    socket.close();
+                }
+
+            }
+
+        };
+        t.start();
+    }
+
+    // sending broadcast messages and retriving server response
+    public void Msg( String msg) throws IOException {
+        // encrypting message at client
+        msg = encrypt(msg);
+        serverOut.write(msg.getBytes());
+
+        String response = bufferIn.readLine();
+        System.out.println(response);
+
+    }
+
+    // sending private messages and retriving server response
+    public void directMsg(String sendTo, String msgBody) throws IOException {
+        // encrypting message at client
+        msgBody = encrypt(msgBody);
+        String cmd = "pm " + sendTo + " " + msgBody + "\n";
+        serverOut.write(cmd.getBytes());
+        if(user.equalsIgnoreCase(sendTo)) {
+            String response = bufferIn.readLine();
+            System.out.println(response);
+        }
+
+    }
+
+    // handling broadcast messages at client
+    private void handleBroadcastMsg(String[] tokens) throws IOException {
+        String msgBody = ""; // use encryption
+        for (String token: tokens){
+            msgBody = msgBody + " " + token;
+        }
+        for (MessageListener listener: messageListeners) {
+            listener.onMessage(user, msgBody);
+        }
+        Msg(msgBody);
+
+    }
+
+    // handling private messages at client
+    private void handleDirectMsg(String[] tokens) throws IOException {
+        String sendTo = tokens [1];
+        String msgBody = ""; // use encryption
+        int i =0;
+        for (String token: tokens){
+            if (i>1) {
+                msgBody = msgBody + " " + token;
+            }
+            i++;
+        }
+
+        for (MessageListener listener: messageListeners) {
+            listener.onMessage(sendTo,msgBody);
+        }
+        directMsg(sendTo,msgBody);
+
+    }
+
+    // handling user online state at client
+    private void handleOnline(String[] tokens) {
+        String userName = tokens[1];
+        for(UserStatusListener listener: userStatusListeners){
+            listener.online(userName);
+        }
+    }
+
+    // handling user offline state at client
+    private void handleOffline(String[] tokens) {
+        String userName = tokens[1];
+        for(UserStatusListener listener: userStatusListeners){
+            listener.offline(userName);
+        }
+    }
+
 }
