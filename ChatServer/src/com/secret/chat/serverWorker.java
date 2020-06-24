@@ -41,6 +41,7 @@ public class serverWorker extends Thread {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         String line;
         while ( (line = reader.readLine()) != null) {
+            System.out.println("Input :" + line);
             String[] tokens = line.split(" ");
             if (tokens != null && tokens.length >0){
                 String cmd = tokens[0];
@@ -58,15 +59,26 @@ public class serverWorker extends Thread {
                         handleBroadcastMsg(line);
                     }
                 }
-                //String message = "You typed:" + line + "\n";
-                //outputStream.write(message.getBytes());
+
             }
 
         }
         clientSocket.close();
     }
 
+
+    // decrypt recieving messages
+    public static String decrypt(String msg){
+        String key = "1234dfrghtjkGHJR";
+        msg = msg.replace(key,"");
+        msg = new StringBuilder(new String(msg)).reverse().toString();
+        System.out.println("Decrypted :" + msg);
+        return msg;
+    }
+
+    // handling broadcast messages for all connected users
     private void handleBroadcastMsg(String msg) {
+        msg = decrypt(msg);
         List<serverWorker> workerList = server.getWorkerList();
         for (serverWorker worker: workerList) {
                 String sendMsg = "Message from " + user + ": " + msg + "\n";
@@ -74,6 +86,7 @@ public class serverWorker extends Thread {
         }
     }
 
+    // handle private messages between two users
     // format 'pm username msg'
     private void handleDirectMsg(String[] tokens) {
         String sendTo = tokens [1];
@@ -85,7 +98,7 @@ public class serverWorker extends Thread {
             }
             i++;
         }
-
+        msgBody = decrypt(msgBody);
         List<serverWorker> workerList = server.getWorkerList();
         for (serverWorker worker: workerList) {
             if (sendTo.equalsIgnoreCase(worker.getUser())) {
@@ -95,6 +108,7 @@ public class serverWorker extends Thread {
         }
     }
 
+    // handling logoff and updating offline status
     private void handleLogOff() throws IOException {
         server.removeWorker(this);
         List<serverWorker> workerList = server.getWorkerList();
@@ -110,10 +124,12 @@ public class serverWorker extends Thread {
         clientSocket.close();
     }
 
+    // get current logged user
     public String getUser() {
         return user;
     }
 
+    // handling user log in and updating online status
     private void handleLogin(OutputStream outputStream, String[] tokens) throws IOException {
         if (tokens.length == 3) {
             String uname = tokens[1];
@@ -147,6 +163,7 @@ public class serverWorker extends Thread {
         }
     }
 
+    // handle message sending (both protocol commands and messages)
     private void send(String msg) {
         if ( user != null) {
             try {
